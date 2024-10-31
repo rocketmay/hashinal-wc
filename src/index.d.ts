@@ -126,6 +126,7 @@ declare class HashinalsWalletConnectSDK {
   getAccountTokens(accountId: string): Promise<{
     tokens: TokenBalance[];
   }>;
+  signMessage(accountId:string, message:string): Promise<HashgraphSDK.SignerSignature[]>;
 }
 
 declare global {

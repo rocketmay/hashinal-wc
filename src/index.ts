@@ -25,6 +25,7 @@ import {
   AccountUpdateTransaction,
   AccountAllowanceApproveTransaction,
   TokenId,
+  SignerSignature
 } from '@hashgraph/sdk';
 import * as HashgraphSDK from '@hashgraph/sdk';
 import {
@@ -32,6 +33,7 @@ import {
   HederaJsonRpcMethod,
   DAppConnector,
   HederaChainId,
+  stringToSignerMessage,
 } from '@hashgraph/hedera-wallet-connect';
 import {
   Message,
@@ -781,7 +783,43 @@ class HashinalsWalletConnectSDK {
       throw error;
     }
   }
+
+/**
+* Signs a message using the connected wallet's signer
+* 
+* @param message - The message to be signed
+* @returns Promise<SignerSignature[]> - Array of signatures from the signer
+* @throws Error if wallet is not initialized or signer not found
+* 
+* To verify this signature, developers need to:
+* 1. Format the message using the Hedera standard prefix and length
+*   eg: const signedMessage = '\x19Hedera Signed Message:\n' + message.length + message;
+*   or use stringToSignerMessage(message) in the hedera-wallet-connect repo
+* 2. Query the signing account's public key from the network
+* 3. Create a PublicKey instance from the account's public key
+* 4. Use publicKey.verify() with the formatted message bytes and signature
+*/
+  public async signMessage(
+    message: string
+  ) : Promise<SignerSignature[]> {
+    this.ensureInitialized();
+    const accountInfo = this.getAccountInfo();
+    const accountId = accountInfo?.accountId;
+    const signer = this.dAppConnector.signers.find(
+      (signer_) => signer_.getAccountId().toString() === accountId
+    );
+    
+    const prefixedMessage:Uint8Array[] = stringToSignerMessage(message);
+
+    const signedMessage = await signer.sign(prefixedMessage);
+
+    return signedMessage;
+    
+  }
+
+
 }
+
 
 // This variable is replaced at build time.
 // @ts-ignore

@@ -260,5 +260,6 @@ export type HashinalsWalletConnectSDK = {
     ownerAccountId: string
   ) => Promise<TransactionReceipt>;
   getAccountTokens: (accountId: string) => Promise<{ tokens: TokenBalance[] }>;
+  signMessage(accountId:string, message:string): Promise<hashgraph.SignerSignature[]>;
   HashgraphSDK: typeof hashgraph;
 };
